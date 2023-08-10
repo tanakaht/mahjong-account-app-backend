@@ -2,7 +2,8 @@ import json
 import boto3
 import os
 # import requests
-dynamodb_client = boto3.client(os.getenv('TableName'))
+dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-1')
+table = dynamodb.Table(os.getenv('TableName'))
 
 def lambda_handler(event, context):
     """Sample pure Lambda function
