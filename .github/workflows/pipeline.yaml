@@ -14,18 +14,18 @@ env:
   PIPELINE_USER_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   SAM_TEMPLATE: template.yaml
   TESTING_STACK_NAME: mahjong-account-app-backend-dev
-  TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::947233670317:role/aws-sam-cli-managed-dev-pipe-PipelineExecutionRole-1GNZLGKNZ4K6F
-  TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::947233670317:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionR-7WC93G7L1LOC
-  TESTING_ARTIFACTS_BUCKET: aws-sam-cli-managed-dev-pipeline-artifactsbucket-y7dvbk6mt7r0
+  TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::947233670317:role/aws-sam-cli-managed-dev-pipe-PipelineExecutionRole-1EE12PJR9EVU0
+  TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::947233670317:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionR-1A7J0WWLCSH9E
+  TESTING_ARTIFACTS_BUCKET: aws-sam-cli-managed-dev-pipeline-artifactsbucket-1p9r0angkbex5
   # If there are functions with "Image" PackageType in your template,
   # uncomment the line below and add "--image-repository ${TESTING_IMAGE_REPOSITORY}" to
   # testing "sam package" and "sam deploy" commands.
   # TESTING_IMAGE_REPOSITORY = '0123456789.dkr.ecr.region.amazonaws.com/repository-name'
   TESTING_REGION: ap-northeast-1
   PROD_STACK_NAME: mahjong-account-app-backend-prod
-  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::947233670317:role/aws-sam-cli-managed-prod-pip-PipelineExecutionRole-17GBBT8ZTQVWA
-  PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::947233670317:role/aws-sam-cli-managed-prod-CloudFormationExecutionR-1KVBTB137SN63
-  PROD_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline-artifactsbucket-14pqskdhze1of
+  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::947233670317:role/aws-sam-cli-managed-prod-pip-PipelineExecutionRole-Z2SZUNLLJHDX
+  PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::947233670317:role/aws-sam-cli-managed-prod-CloudFormationExecutionR-18ZE98CA60S8I
+  PROD_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline-artifactsbucket-ukufjlz3gr8
   # If there are functions with "Image" PackageType in your template,
   # uncomment the line below and add "--image-repository ${PROD_IMAGE_REPOSITORY}" to
   # prod "sam package" and "sam deploy" commands.
