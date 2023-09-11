@@ -25,11 +25,13 @@ def lambda_handler(event, context):
 
         Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
     """
+    user_id = event['requestContext']['authorizer']['claims']['sub']
+    print(f'User ID (sub claim): {user_id}')
 
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "message": "hello world",
+            "message": f"hello: {user_id}",
             # "location": ip.text.replace("\n", "")
         }),
     }
