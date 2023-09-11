@@ -23,6 +23,15 @@ paths:
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -31,7 +40,7 @@ paths:
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
-  /users:
+  /users/get-userinfo:
     get:
       summary: User情報取得
       responses:
@@ -43,12 +52,21 @@ paths:
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
-
+  /users/update-userinfo:
     put:
       summary: User情報更新
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -65,6 +83,15 @@ paths:
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -75,12 +102,21 @@ paths:
         type: aws_proxy
 
 
-  /users/friends:
+  /users/friends/friend-request:
     post:
       summary: 友達申請
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -89,7 +125,7 @@ paths:
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
-
+  /users/friends/get-friendlist:
     get:
       summary: 友達リスト取得
       responses:
@@ -101,12 +137,21 @@ paths:
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
-
+  /users/friends/delete-friend:
     delete:
       summary: 友達削除
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -117,12 +162,21 @@ paths:
         type: aws_proxy
 
 
-  /users/friends/accept:
+  /users/friends/authorize-friend-request:
     post:
-      summary: 友達申請受理
+      summary: 友達申請承認/拒否
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -133,12 +187,21 @@ paths:
         type: aws_proxy
 
 
-  /rules:
+  /rules/register-rule:
     post:
       summary: ルール登録
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -147,7 +210,7 @@ paths:
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
-
+  /rules/get-rule:
     get:
       summary: ルール取得
       responses:
@@ -167,6 +230,15 @@ paths:
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -183,6 +255,15 @@ paths:
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -192,13 +273,21 @@ paths:
         httpMethod: POST
         type: aws_proxy
 
-
-  /matches/round:
+  /matches/register-round:
     post:
       summary: round登録
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -208,11 +297,21 @@ paths:
         httpMethod: POST
         type: aws_proxy
 
+  /matches/delete-round:
     delete:
       summary: round削除
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -222,13 +321,45 @@ paths:
         httpMethod: POST
         type: aws_proxy
 
+  /matches/delete-match:
+    delete:
+      summary: round削除
+      responses:
+        200:
+          description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
+      security:
+        - cogniteUserPool: []
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteMatchFunction.Arn}:live/invocations
+        passthroughBehavior: when_no_templates
+        httpMethod: POST
+        type: aws_proxy
 
-  /matches/resume:
+  /matches/resume-match:
     get:
       summary: match再開
       responses:
         200:
           description: 'success'
+        401:
+          description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -239,7 +370,7 @@ paths:
         type: aws_proxy
 
 
-  /matches/results:
+  /matches/get-results:
     get:
       summary: 戦績取得(個人)
       responses:
@@ -253,7 +384,7 @@ paths:
         type: aws_proxy
 
 
-  /matches/calculations:
+  /matches/get-scoreboard:
     get:
       summary: 収支計算
       responses:

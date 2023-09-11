@@ -166,7 +166,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/users"
+            Path: "/users/get-userinfo"
             Method: get
             RestApiId: !Ref RestApi
 
@@ -189,7 +189,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/users"
+            Path: "/users/update-userinfo"
             Method: put
             RestApiId: !Ref RestApi
 
@@ -212,7 +212,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/users/friends"
+            Path: "/users/friends/delete-friend"
             Method: delete
             RestApiId: !Ref RestApi
 
@@ -258,7 +258,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/users/friends"
+            Path: "/users/friends/friend-request"
             Method: post
             RestApiId: !Ref RestApi
 
@@ -281,7 +281,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/rules"
+            Path: "/rules/register-rule"
             Method: post
             RestApiId: !Ref RestApi
 
@@ -327,7 +327,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/matches/calculations"
+            Path: "/matches/get-scoreboard"
             Method: get
             RestApiId: !Ref RestApi
 
@@ -350,7 +350,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/users/friends"
+            Path: "/users/friends/get-friendlist"
             Method: get
             RestApiId: !Ref RestApi
 
@@ -373,7 +373,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/rules"
+            Path: "/rules/get-rule"
             Method: get
             RestApiId: !Ref RestApi
 
@@ -419,7 +419,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/matches/resume"
+            Path: "/matches/resume-match"
             Method: get
             RestApiId: !Ref RestApi
 
@@ -442,7 +442,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/matches/round"
+            Path: "/matches/register-round"
             Method: post
             RestApiId: !Ref RestApi
 
@@ -465,7 +465,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/matches/results"
+            Path: "/matches/get-results"
             Method: get
             RestApiId: !Ref RestApi
 
@@ -488,9 +488,34 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/matches/round"
+            Path: "/matches/delete-round"
             Method: delete
             RestApiId: !Ref RestApi
+
+
+  DeleteMatchFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/delete_match/
+      AutoPublishAlias: live
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+      - x86_64
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref DynamoDBTable
+      Environment:
+        Variables:
+          TableName: !Ref DynamoDBTable
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/matches/delete-match"
+            Method: delete
+            RestApiId: !Ref RestApi
+
 
   PostMatchesEndFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -534,7 +559,7 @@ Resources:
         ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: "/users/friends/accept"
+            Path: "/users/friends/authorize-friend-request"
             Method: post
             RestApiId: !Ref RestApi
 
