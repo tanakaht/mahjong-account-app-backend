@@ -25,6 +25,16 @@ paths:
           description: 'success'
         401:
           description: 'unauthorized'
+      requestBody:
+        description: 'device_token'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_token:
+                  type: string
       parameters:
         - in: header
           name: Authorization
@@ -40,24 +50,53 @@ paths:
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
+
   /users/get-userinfo:
     get:
       summary: User情報取得
       responses:
         200:
           description: 'success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_infos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_id:
+                          type: string
+                        username:
+                          type: string
+                        is_guest:
+                          type: boolean
+                        date:
+                          type: string
+        400:
+          description: 'invalid query parameter'
+      parameters:
+        - in: query
+          name: user_ids
+          schema:
+            type: string
+          description: 'user_id, 複数回指定'
+          required: true
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetUsersFunction.Arn}:live/invocations
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
+
   /users/update-userinfo:
     put:
       summary: User情報更新
       responses:
-        200:
-          description: 'success'
+        500:
+          description: 'not impl'
         401:
           description: 'unauthorized'
       parameters:
@@ -76,13 +115,12 @@ paths:
         httpMethod: POST
         type: aws_proxy
 
-
   /users/register-guest:
     post:
-      summary: ゲストの本登録
+      summary: ゲストの登録
       responses:
-        200:
-          description: 'success'
+        500:
+          description: 'not impl'
         401:
           description: 'unauthorized'
       parameters:
@@ -101,15 +139,60 @@ paths:
         httpMethod: POST
         type: aws_proxy
 
-
   /users/friends/friend-request:
     post:
       summary: 友達申請
       responses:
         200:
           description: 'success'
+        400:
+          description: 'invalid request body'
         401:
           description: 'unauthorized'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          description: 'cognito id token'
+          required: true
+      requestBody:
+        description: 'friend_id, action'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                friend_id:
+                  type: string
+      security:
+        - cogniteUserPool: []
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostUsersFriendsFunction.Arn}:live/invocations
+        passthroughBehavior: when_no_templates
+        httpMethod: POST
+        type: aws_proxy
+
+  /users/friends/get-friend-request:
+    get:
+      summary: 友達リスト取得
+      responses:
+        200:
+          description: 'success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  friend_ids:
+                    type: array
+                    items:
+                      type: string
+                      example: ["user_id1", "user_id2"]
+        400:
+          description: 'invalid query parameter'
       parameters:
         - in: header
           name: Authorization
@@ -121,22 +204,36 @@ paths:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostUsersFriendsFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetUsersFriendsRequestFunction.Arn}:live/invocations
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
+
   /users/friends/get-friendlist:
     get:
       summary: 友達リスト取得
       responses:
         200:
           description: 'success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  friend_ids:
+                    type: array
+                    items:
+                      type: string
+                      example: ["user_id1", "user_id2"]
+        400:
+          description: 'invalid query parameter'
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetUsersFriendsFunction.Arn}:live/invocations
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
+
   /users/friends/delete-friend:
     delete:
       summary: 友達削除
@@ -161,15 +258,18 @@ paths:
         httpMethod: POST
         type: aws_proxy
 
-
   /users/friends/authorize-friend-request:
     post:
       summary: 友達申請承認/拒否
       responses:
         200:
           description: 'success'
+        400:
+          description: 'invalid query parameter'
         401:
           description: 'unauthorized'
+        403:
+          description: 'no friend request'
       parameters:
         - in: header
           name: Authorization
@@ -177,6 +277,22 @@ paths:
             type: string
           description: 'cognito id token'
           required: true
+      requestBody:
+        description: 'friend_id, action'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                friend_id:
+                  type: string
+                action:
+                  type: string
+                  enum:
+                    - accept
+                    - temporarily_accept
+                    - deny
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -185,6 +301,7 @@ paths:
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
+
 
 
   /rules/register-rule:
@@ -210,6 +327,7 @@ paths:
         passthroughBehavior: when_no_templates
         httpMethod: POST
         type: aws_proxy
+
   /rules/get-rule:
     get:
       summary: ルール取得
@@ -224,6 +342,8 @@ paths:
         type: aws_proxy
 
 
+
+
   /matches/start:
     post:
       summary: match開始
@@ -232,6 +352,26 @@ paths:
           description: 'success'
         401:
           description: 'unauthorized'
+      requestBody:
+        description: 'match_id, user_ids'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                match_id:
+                  type: string
+                user_id1:
+                  type: string
+                user_id2:
+                  type: string
+                user_id3:
+                  type: string
+                user_id4:
+                  type: string
+                rule_id:
+                  type: string
       parameters:
         - in: header
           name: Authorization
@@ -248,7 +388,6 @@ paths:
         httpMethod: POST
         type: aws_proxy
 
-
   /matches/end:
     post:
       summary: match終了
@@ -257,6 +396,16 @@ paths:
           description: 'success'
         401:
           description: 'unauthorized'
+      requestBody:
+        description: 'match_id, user_ids'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                match_id:
+                  type: string
       parameters:
         - in: header
           name: Authorization
@@ -281,6 +430,53 @@ paths:
           description: 'success'
         401:
           description: 'unauthorized'
+      requestBody:
+        description: 'match_id, user_ids'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                match_id:
+                  type: string
+                round_id:
+                  type: string
+                round_number:
+                  type: number
+                ba:
+                  type: string
+                end_type:
+                  type: string
+                user_end_type:
+                  type: array
+                  items:
+                    type: string
+                is_reach:
+                  type: array
+                  items:
+                    type: boolean
+                is_tenpai:
+                  type: array
+                  items:
+                    type: boolean
+                start_point:
+                  type: array
+                  items:
+                    type: number
+                raw_point_diff:
+                  type: array
+                  items:
+                    type: number
+                other_point_diff:
+                  type: array
+                  items:
+                    type: number
+                other_profit:
+                  type: array
+                  items:
+                    type: number
+
       parameters:
         - in: header
           name: Authorization

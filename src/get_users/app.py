@@ -26,11 +26,24 @@ def lambda_handler(event, context):
 
         Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
     """
-
+    try:
+        user_ids = event["multiValueQueryStringParameters"]["user_ids"]
+    except KeyError:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "message": "query parameters is invalid",
+            }),
+        }
+    res = []
+    for user_id in user_ids:
+        res.append(table.get_item(Key={
+            "user_id": user_id,
+            "various_id": user_id,
+            })["Item"])
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
+            "user_infos": res,
         }),
     }

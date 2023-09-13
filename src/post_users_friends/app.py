@@ -1,6 +1,7 @@
 import json
 import boto3
 import os
+import datetime
 # import requests
 table = boto3.resource('dynamodb').Table(os.getenv('TableName'))
 
@@ -25,13 +26,38 @@ def lambda_handler(event, context):
 
         Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
     """
-    user_id = event['requestContext']['authorizer']['claims']['sub']
-    print(f'User ID (sub claim): {user_id}')
+    try:
+        user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
+    except KeyError:
+        return {
+            "statusCode": 401,
+            "body": json.dumps({
+                "message": "unoriginated user",
+            }),
+        }
+    try:
+        friend_id = json.loads(event["body"])["friend_id"]
+    except KeyError:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "message": "request body is invalid",
+            }),
+        }
+
+    item = {
+        "user_id": user_id,
+        "various_id": friend_id,
+        "base_table": "1",
+        "date": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+        "status": "pending"
+    }
+    table.put_item(Item=item)
 
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "message": f"hello: {user_id}",
+            "message": f"friend_request from {user_id} to {friend_id} is processed",
             # "location": ip.text.replace("\n", "")
         }),
     }

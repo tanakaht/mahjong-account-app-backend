@@ -1,8 +1,10 @@
 import json
 import boto3
 import os
+from boto3.dynamodb.conditions import Key, Attr
 import datetime
 # import requests
+# dynamodb_client = boto3.client(os.getenv('TableName'))
 table = boto3.resource('dynamodb').Table(os.getenv('TableName'))
 
 def lambda_handler(event, context):
@@ -35,24 +37,16 @@ def lambda_handler(event, context):
                 "message": "unoriginated user",
             }),
         }
-    item = {
-        "user_id": user_id,
-        "various_id": user_id,
-        "username": event['requestContext']['authorizer']['claims']['cognito:username'],
-        "is_guest": False,
-        "base_table": "0",
-        "date": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-    }
-    try:
-        item["device_token"] = json.loads(event["body"])["device_token"]
-    except KeyError:
-        pass
-    table.put_item(Item=item)
-
+    res = table.query(
+        IndexName="base_table",  # LSIを使用する場合、この行を追加
+        KeyConditionExpression=Key('user_id').eq(user_id) & Key('base_table').eq('1'),
+        FilterExpression=Key('status').eq("pending"),
+        ProjectionExpression="various_id",
+    )["Items"]
+    friend_ids = [x["various_id"] for x in res]
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "message": f"user: {user_id} is registered",
-            # "location": ip.text.replace("\n", "")
+            "friend_ids": friend_ids,
         }),
     }

@@ -59,7 +59,7 @@ Resources:
           RequireLowercase: true
           RequireNumbers: true
           RequireSymbols: false
-          RequireUppercase: true
+          RequireUppercase: false
       MfaConfiguration: "OFF"
       LambdaConfig:
         PostConfirmation: !Sub ${PostUsersConfirmationFunction.Arn}
@@ -104,7 +104,7 @@ Resources:
         - AttributeName: various_id
           KeyType: RANGE
       GlobalSecondaryIndexes:
-      - IndexName: match-id
+      - IndexName: match_id
         KeySchema:
           - AttributeName: match_id
             KeyType: HASH
@@ -238,6 +238,30 @@ Resources:
             Path: "/users/register-guest"
             Method: post
             RestApiId: !Ref RestApi
+
+  GetUsersFriendsRequestFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/get_users_friend_request/
+      AutoPublishAlias: live
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+      - x86_64
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref DynamoDBTable
+      Environment:
+        Variables:
+          TableName: !Ref DynamoDBTable
+      Events:
+        ApiEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: "/users/friends/get-friend-request"
+            Method: get
+            RestApiId: !Ref RestApi
+
 
   PostUsersFriendsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
