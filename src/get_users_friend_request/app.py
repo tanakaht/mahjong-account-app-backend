@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     """
     try:
         user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 401,
             "body": json.dumps({

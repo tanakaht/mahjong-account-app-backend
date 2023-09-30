@@ -10,7 +10,7 @@ def lambda_handler(event, context):
     # confirm userする
     try:
         user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 401,
             "body": json.dumps({
@@ -21,7 +21,7 @@ def lambda_handler(event, context):
     try:
         data = json.loads(event["body"])
         guest_user_name = data["guest_user_name"]
-    except (KeyError, json.JSONDecodeError):
+    except (KeyError, TypeError, json.JSONDecodeError):
         guest_user_name = "guest" + guest_user_id[:5]
     item = {
         "user_id": guest_user_id,

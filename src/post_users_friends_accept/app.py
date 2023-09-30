@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     """
     try:
         user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 401,
             "body": json.dumps({
@@ -38,7 +38,7 @@ def lambda_handler(event, context):
     try:
         friend_id = json.loads(event["body"])["friend_id"]
         action = json.loads(event["body"])["action"]
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 400,
             "body": json.dumps({
@@ -52,7 +52,7 @@ def lambda_handler(event, context):
                 })["Item"]
         if friend_request["base_table"] != "1" or friend_request["status"] != "pending":
             raise ValueError
-    except (KeyError, ValueError):
+    except (KeyError, TypeError, ValueError):
         return {
             "statusCode": 403,
             "body": json.dumps({

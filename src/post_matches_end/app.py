@@ -63,7 +63,7 @@ def lambda_handler(event, context):
     """
     try:
         user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 401,
             "body": json.dumps({
@@ -73,7 +73,7 @@ def lambda_handler(event, context):
     try:
         data = json.loads(event["body"])
         match_id = data["match_id"]
-    except KeyError as e:
+    except (KeyError, TypeError):
         return {
             "statusCode": 400,
             "body": json.dumps({
@@ -85,7 +85,7 @@ def lambda_handler(event, context):
         match_info = get_item(table, "01", match_id)
         if match_info["status"]!="playing":
             raise KeyError
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 404,
             "body": json.dumps({

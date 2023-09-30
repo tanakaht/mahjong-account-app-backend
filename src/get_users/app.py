@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     """
     try:
         user_ids = event["multiValueQueryStringParameters"]["user_ids"]
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 400,
             "body": json.dumps({

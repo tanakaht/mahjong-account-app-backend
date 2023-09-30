@@ -16,7 +16,7 @@ def get_item(table, user_id, various_id):
 def lambda_handler(event, context):
     try:
         user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 401,
             "body": json.dumps({
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
         }
     try:
         friend_id = json.loads(event["body"])["friend_id"]
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 400,
             "body": json.dumps({
@@ -46,7 +46,7 @@ def lambda_handler(event, context):
                     "message": "request is invalid",
                 }),
             }
-    except KeyError:
+    except (KeyError, TypeError):
         pass
 
     # 相手がゲストユーザーだったら、勝手にフレンドになる
@@ -75,7 +75,7 @@ def lambda_handler(event, context):
                     "message": f"friend_request from {user_id} to {friend_id} is processed",
                 }),
             }
-    except KeyError:
+    except (KeyError, TypeError):
         pass
     item = {
         "user_id": user_id,

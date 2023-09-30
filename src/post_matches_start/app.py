@@ -63,7 +63,7 @@ def lambda_handler(event, context):
     """
     try:
         user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 401,
             "body": json.dumps({
@@ -78,7 +78,7 @@ def lambda_handler(event, context):
         user_id3 = data["user_id3"]
         user_id4 = data.get("user_id4")
         rule_id = data["rule_id"]
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 400,
             "body": json.dumps({

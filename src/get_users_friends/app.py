@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     """
     try:
         user_id = event["queryStringParameters"]["user_id"]
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 400,
             "body": json.dumps({

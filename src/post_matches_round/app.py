@@ -63,7 +63,7 @@ def lambda_handler(event, context):
     """
     try:
         user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 401,
             "body": json.dumps({
@@ -84,7 +84,7 @@ def lambda_handler(event, context):
         raw_point_diff = data["raw_point_diff"]
         other_point_diff = data["other_point_diff"]
         other_profit = data["other_profit"]
-    except KeyError as e:
+    except (KeyError, TypeError):
         return {
             "statusCode": 400,
             "body": json.dumps({
@@ -99,7 +99,7 @@ def lambda_handler(event, context):
             ScanIndexForward=False,
             Limit=1
         )["Items"][0]["round_number"]
-    except (IndexError, KeyError):
+    except (IndexError, KeyError, TypeError):
         last_round_number = -1
     if round_number != last_round_number+1:
         return {
@@ -113,7 +113,7 @@ def lambda_handler(event, context):
         match_info = get_item(table, "01", match_id)
         if match_info["status"]!="playing":
             raise KeyError
-    except KeyError:
+    except (KeyError, TypeError):
         return {
             "statusCode": 404,
             "body": json.dumps({
