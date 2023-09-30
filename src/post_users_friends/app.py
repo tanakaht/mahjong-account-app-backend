@@ -5,27 +5,15 @@ import datetime
 # import requests
 table = boto3.resource('dynamodb').Table(os.getenv('TableName'))
 
+def get_item(table, user_id, various_id):
+    return table.get_item(Key={
+        "user_id": user_id,
+        "various_id": various_id,
+    })["Item"]
+
+
+
 def lambda_handler(event, context):
-    """Sample pure Lambda function
-
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
-
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
     try:
         user_id = "0"+event['requestContext']['authorizer']['claims']['sub']
     except KeyError:
@@ -44,7 +32,51 @@ def lambda_handler(event, context):
                 "message": "request body is invalid",
             }),
         }
+    # すでにリクエスト済み, フレンドであったらやめる
+    try:
+        friend_info = get_item(table, user_id, friend_id)
+        if friend_info["status"]=="denied":
+            pass
+        elif friend_info["status"]=="temporarily_accepted" and friend_info["expire_date"]>datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'):
+            pass
+        else:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({
+                    "message": "request is invalid",
+                }),
+            }
+    except KeyError:
+        pass
 
+    # 相手がゲストユーザーだったら、勝手にフレンドになる
+    try:
+        friend_user_info = get_item(table, friend_id, friend_id)
+        if friend_user_info["is_guest"]:
+            table.put_item(Item={
+                "user_id": user_id,
+                "various_id": friend_id,
+                "base_table": "2",
+                "date": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+                "status": "accepted",
+                "expire_date": (datetime.datetime.now()+datetime.timedelta(days=1000*365)).strftime('%Y-%m-%dT%H:%M:%S'),
+            })
+            table.put_item(Item={
+                "user_id": friend_id,
+                "various_id": user_id,
+                "base_table": "2",
+                "date": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+                "status": "accepted",
+                "expire_date": (datetime.datetime.now()+datetime.timedelta(days=1000*365)).strftime('%Y-%m-%dT%H:%M:%S'),
+            })
+            return {
+                "statusCode": 200,
+                "body": json.dumps({
+                    "message": f"friend_request from {user_id} to {friend_id} is processed",
+                }),
+            }
+    except KeyError:
+        pass
     item = {
         "user_id": user_id,
         "various_id": friend_id,

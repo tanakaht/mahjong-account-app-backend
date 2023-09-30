@@ -27,7 +27,6 @@ paths:
           description: 'unauthorized'
       requestBody:
         description: 'device_token'
-        required: true
         content:
           application/json:
             schema:
@@ -119,10 +118,31 @@ paths:
     post:
       summary: ゲストの登録
       responses:
-        500:
-          description: 'not impl'
+        200:
+          description: 'success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  guest_user_id:
+                    type: string
+                  guest_user_name:
+                    type: string
+        400:
+          description: 'invalid query parameter'
         401:
           description: 'unauthorized'
+      requestBody:
+        description: 'guest_user_name'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guest_user_name:
+                  type: string
+
       parameters:
         - in: header
           name: Authorization
@@ -508,6 +528,16 @@ paths:
             type: string
           description: 'cognito id token'
           required: true
+      requestBody:
+        description: 'match_id'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                match_id:
+                  type: string
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -532,6 +562,16 @@ paths:
             type: string
           description: 'cognito id token'
           required: true
+      requestBody:
+        description: 'match_id'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                match_id:
+                  type: string
       security:
         - cogniteUserPool: []
       x-amazon-apigateway-integration:
@@ -572,6 +612,125 @@ paths:
       responses:
         200:
           description: 'success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  matches:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_id:
+                          type: string
+                          example:  "01111"
+                        various_id:
+                          type: string
+                          example:  "11111"
+                        match_id:
+                          type: string
+                          example:  "11111"
+                        base_table:
+                          type: string
+                          example:  "4"
+                        date:
+                          type: string
+                          example:  "2023-09-22T16:26:05"
+                        point:
+                          type: integer
+                          example:  33000
+                        raw_point:
+                          type: integer
+                          example:  38000
+                        total_profit:
+                          type: integer
+                          example:  33000
+                        point_profit:
+                          type: integer
+                          example:  33000
+                        bonus_profit:
+                          type: integer
+                          example:  0
+                        rank:
+                          type: integer
+                          example:  1
+                        rule_id:
+                          type: string
+                          example:  "31111"
+                        writer_user_id:
+                          type: string
+                          example:  "01111"
+                        writer_user_name:
+                          type: string
+                          example:  "user1"
+                  rounds:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_id:
+                          type: string
+                          example: "01111"
+                        various_id:
+                          type: string
+                          example: "21111"
+                        match_id:
+                          type: string
+                          example: "11111"
+                        base_table:
+                          type: string
+                          example: "6"
+                        date:
+                          type: string
+                          example: "2023-09-22T16:26:05"
+                        end_type:
+                          type: string
+                          example: "\u548c\u4e86"
+                        user_end_type:
+                          type: string
+                          example: "\u30c4\u30e2"
+                        is_reach:
+                          type: boolean
+                          example: true
+                        start_point:
+                          type: integer
+                          example: 25000
+                        end_point:
+                          type: integer
+                          example: 38000
+                        point_diff:
+                          type: integer
+                          example: 13000
+                        raw_point_diff:
+                          type: integer
+                          example: 12000
+                        other_point_diff:
+                          type: integer
+                          example: 1000
+                        other_profit:
+                          type: integer
+                          example: 0
+                        start_rank:
+                          type: integer
+                          example: 1
+                        end_rank:
+                          type: integer
+                          example: 1
+                        pos:
+                          type: string
+                          example: "\u6771"
+                        rule_id:
+                          type: string
+                          example: "31111"
+                        writer_user_id:
+                          type: string
+                          example: "01111"
+      parameters:
+        - in: query
+          name: user_id
+          schema:
+            type: string
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetMatchesResultsFunction.Arn}:live/invocations
@@ -586,6 +745,42 @@ paths:
       responses:
         200:
           description: 'success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreboard:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          user_id:
+                            type: string
+                            example:  "01111"
+                          profit:
+                            type: integer
+                            example:  1000
+                  total_profits:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_id:
+                          type: string
+                          example:  "01111"
+                        profit:
+                          type: integer
+                          example:  1000
+      parameters:
+        - in: query
+          name: user_ids
+          schema:
+            type: string
+          description: 'user_id, 複数回指定'
+          required: true
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetMatchesCalculationsFunction.Arn}:live/invocations

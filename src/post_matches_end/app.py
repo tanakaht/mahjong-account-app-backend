@@ -94,7 +94,7 @@ def lambda_handler(event, context):
         }
     rule_id = match_info["rule_id"]
     rule_info = get_item(table, "03", rule_id)
-    user_ids = [match_info[f"user_id{i}"] for i in range(1, 5) if match_info[f"user_id{i}"] is not None]
+    user_ids = [match_info[f"user_id{i}"] for i in range(1, 5) if match_info.get(f"user_id{i}") is not None]
     # 書き込んで良いか((userがユーザーがフレンド or guestユーザであるか), (match_id使ってないか), (rule_idあるか))確認
     if (not can_write(table, user_id, user_ids)):
         return {
@@ -131,6 +131,8 @@ def lambda_handler(event, context):
         "rule_id": rule_id,
         "writer_user_id": user_id,
     }
+    if len(user_ids)==4:
+        item["user_id4"] = user_ids[3]
     table.put_item(Item=item)
 
     # match_participant

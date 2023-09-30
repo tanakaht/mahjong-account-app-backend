@@ -106,7 +106,7 @@ def base_table_0(create_table):
         "rank_point_2": 10,
         "rank_point_3": -10,
         "rank_point_4": -20,
-        "rate": 100,
+        "rate": 10,
         "tobishou": 0
     })
     return create_table
@@ -238,11 +238,14 @@ def base_apigw_event_user2(base_apigw_event):
 
 
 class TableWatcher:
-    def __init__(self, table) -> None:
+    def __init__(self, table, verbose=True) -> None:
         self.table = table
         self.init_data = self.get_all_elements()
+        self.verbose = verbose
 
     def print_all_elements(self):
+        if not self.verbose:
+            return
         print("------------------")
         print("all_elements")
         data = self.get_all_elements()
@@ -271,6 +274,8 @@ class TableWatcher:
         return {"removed":removed, "added":added, "changed": changed}
 
     def print_data_diff(self):
+        if not self.verbose:
+            return
         res = self.get_data_diff()
         if len(res["removed"])!=0:
             print("------------------")
@@ -291,9 +296,9 @@ class TableWatcher:
                 print()
 
 
-def test_post_users_confirmation(create_table, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2):
+def test_post_users_confirmation(create_table, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
     from src.post_users_confirmation.app import lambda_handler
-    tablewatcher = TableWatcher(create_table)
+    tablewatcher = TableWatcher(create_table, verbose=verbose)
     req1 = copy.deepcopy(base_apigw_event_user1)
     req1["httpMethod"] = "POST"
     req1["body"]= '{"device_token": "xxxxx"}'
@@ -311,9 +316,9 @@ def test_post_users_confirmation(create_table, base_apigw_event, base_apigw_even
     # assert data["message"] == "hello world"
 
 
-def test_get_users(base_table_0, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2):
+def test_get_users(base_table_0, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
     from src.get_users.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_0)
+    tablewatcher = TableWatcher(base_table_0, verbose=verbose)
     tablewatcher.print_all_elements()
     table_data = tablewatcher.get_all_elements()
     req = copy.deepcopy(base_apigw_event)
@@ -329,9 +334,9 @@ def test_get_users(base_table_0, base_apigw_event, base_apigw_event_user1, base_
     assert is_same_without_date(data["user_infos"][1], table_data[1])
     # assert data["message"] == "hello world"
 
-def test_post_users_friends(base_table_0, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2):
+def test_post_users_friends(base_table_0, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
     from src.post_users_friends.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_0)
+    tablewatcher = TableWatcher(base_table_0, verbose=verbose)
     req = copy.deepcopy(base_apigw_event_user1)
     req["httpMethod"] = "POST"
     req["body"]= '{"friend_id": "02222"}'
@@ -345,9 +350,28 @@ def test_post_users_friends(base_table_0, base_apigw_event, base_apigw_event_use
     # assert "message" in result["body"]
     # assert data["message"] == "hello world"
 
-def test_get_users_friend_request(base_table_01, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2):
+def test_post_users_friends_guest(base_table_023, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
+    guest_user_id = test_post_users_register_guest(base_table_023, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=False)
+    print(guest_user_id)
+
+    from src.post_users_friends.app import lambda_handler
+    tablewatcher = TableWatcher(base_table_023, verbose=verbose)
+    req = copy.deepcopy(base_apigw_event_user2)
+    req["httpMethod"] = "POST"
+    req["body"]= json.dumps({"friend_id": guest_user_id})
+    result = lambda_handler(req, {})
+    data = json.loads(result["body"])
+    # print debug
+    print(result)
+    tablewatcher.print_data_diff()
+    # 検証
+    assert result["statusCode"] == 200
+    # assert "message" in result["body"]
+    # assert data["message"] == "hello world"
+
+def test_get_users_friend_request(base_table_01, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
     from src.get_users_friend_request.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_01)
+    tablewatcher = TableWatcher(base_table_01, verbose=verbose)
     tablewatcher.print_all_elements()
     table_data = tablewatcher.get_all_elements()
     req = copy.deepcopy(base_apigw_event_user1)
@@ -361,9 +385,9 @@ def test_get_users_friend_request(base_table_01, base_apigw_event, base_apigw_ev
     # assert is_same_without_date(data["user_infos"][0], table_data[0])
     # assert is_same_without_date(data["user_infos"][1], table_data[1])
 
-def test_post_users_friends_accept(base_table_01, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2):
+def test_post_users_friends_accept(base_table_01, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
     from src.post_users_friends_accept.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_01)
+    tablewatcher = TableWatcher(base_table_01, verbose=verbose)
     req = copy.deepcopy(base_apigw_event_user1)
     req["httpMethod"] = "POST"
     # req["body"]= {"friend_id": "02222", "action": "accept"}
@@ -380,9 +404,9 @@ def test_post_users_friends_accept(base_table_01, base_apigw_event, base_apigw_e
     # assert data["message"] == "hello world"
 
 
-def test_get_users_friends(base_table_02, base_apigw_event):
+def test_get_users_friends(base_table_02, base_apigw_event, verbose=True):
     from src.get_users_friends.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_02)
+    tablewatcher = TableWatcher(base_table_02, verbose=verbose)
     # tablewatcher.print_all_elements()
     req = copy.deepcopy(base_apigw_event)
     req["httpMethod"] = "GET"
@@ -404,9 +428,9 @@ def test_get_users_friends(base_table_02, base_apigw_event):
     assert data["friend_ids"] == ["01111", "03333", "04444"]
 
 
-def test_post_matches_start(base_table_02, base_apigw_event_user1):
+def test_post_matches_start(base_table_02, base_apigw_event_user1, verbose=True):
     from src.post_matches_start.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_02)
+    tablewatcher = TableWatcher(base_table_02, verbose=verbose)
     # tablewatcher.print_all_elements()
     req = copy.deepcopy(base_apigw_event_user1)
     req["httpMethod"] = "POST"
@@ -425,7 +449,7 @@ def test_post_matches_start(base_table_02, base_apigw_event_user1):
     # 検証
     assert result["statusCode"] == 200
 
-def test_post_matches_start_invalid1(base_table_02, base_apigw_event_user1):
+def test_post_matches_start_invalid1(base_table_02, base_apigw_event_user1, verbose=True):
     from src.post_matches_start.app import lambda_handler
     req = copy.deepcopy(base_apigw_event_user1)
     req["httpMethod"] = "POST"
@@ -440,7 +464,7 @@ def test_post_matches_start_invalid1(base_table_02, base_apigw_event_user1):
     result = lambda_handler(req, {})
     # 検証
     assert result["statusCode"] == 200
-    tablewatcher = TableWatcher(base_table_02)
+    tablewatcher = TableWatcher(base_table_02, verbose=verbose)
     # tablewatcher.print_all_elements()
     result = lambda_handler(req, {})
     data = json.loads(result["body"])
@@ -448,9 +472,9 @@ def test_post_matches_start_invalid1(base_table_02, base_apigw_event_user1):
     tablewatcher.print_data_diff()
     assert result["statusCode"] == 403
 
-def test_post_matches_start_invalid2(base_table_02, base_apigw_event_user1):
+def test_post_matches_start_invalid2(base_table_02, base_apigw_event_user1, verbose=True):
     from src.post_matches_start.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_02)
+    tablewatcher = TableWatcher(base_table_02, verbose=verbose)
     # tablewatcher.print_all_elements()
     req = copy.deepcopy(base_apigw_event_user1)
     req["httpMethod"] = "POST"
@@ -470,9 +494,9 @@ def test_post_matches_start_invalid2(base_table_02, base_apigw_event_user1):
     assert result["statusCode"] == 403
 
 
-def test_post_matches_round(base_table_023, base_apigw_event_user1):
+def test_post_matches_round(base_table_023, base_apigw_event_user1, verbose=True):
     from src.post_matches_round.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_023)
+    tablewatcher = TableWatcher(base_table_023, verbose=verbose)
     # tablewatcher.print_all_elements()
     req = copy.deepcopy(base_apigw_event_user1)
     req["httpMethod"] = "POST"
@@ -498,10 +522,10 @@ def test_post_matches_round(base_table_023, base_apigw_event_user1):
     assert result["statusCode"] == 200
 
 
-def test_post_matches_end(base_table_023, base_apigw_event_user1):
-    test_post_matches_round(base_table_023, base_apigw_event_user1)
+def test_post_matches_end(base_table_023, base_apigw_event_user1, verbose=True):
+    test_post_matches_round(base_table_023, base_apigw_event_user1, verbose=False)
     from src.post_matches_end.app import lambda_handler
-    tablewatcher = TableWatcher(base_table_023)
+    tablewatcher = TableWatcher(base_table_023, verbose=verbose)
     # tablewatcher.print_all_elements()
     req = copy.deepcopy(base_apigw_event_user1)
     req["httpMethod"] = "POST"
@@ -514,3 +538,105 @@ def test_post_matches_end(base_table_023, base_apigw_event_user1):
     tablewatcher.print_data_diff()
     # 検証
     assert result["statusCode"] == 200
+
+def test_get_matches_results(base_table_023, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
+    # 事前テーブル作成
+    # test_post_matches_round(base_table_023, base_apigw_event_user1)
+    test_post_matches_end(base_table_023, base_apigw_event_user1, verbose=False)
+
+    from src.get_matches_results.app import lambda_handler
+    tablewatcher = TableWatcher(base_table_023, verbose=verbose)
+    # tablewatcher.print_all_elements()
+    req = copy.deepcopy(base_apigw_event)
+    req["httpMethod"] = "GET"
+    req["queryStringParameters"] = {"user_id": "01111"}
+    result = lambda_handler(req, {})
+    data = result["body"]
+    # print debug
+    print(data)
+    # 検証
+    assert result["statusCode"] == 200
+
+def test_get_matches_calculations(base_table_023, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
+    # 事前テーブル作成
+    # test_post_matches_round(base_table_023, base_apigw_event_user1)
+    test_post_matches_end(base_table_023, base_apigw_event_user1, verbose=False)
+
+    from src.get_matches_calculations.app import lambda_handler
+    tablewatcher = TableWatcher(base_table_023, verbose=verbose)
+    # tablewatcher.print_all_elements()
+    req = copy.deepcopy(base_apigw_event)
+    req["httpMethod"] = "GET"
+    req["multiValueQueryStringParameters"]= {"user_ids": ["01111", "02222", "03333", "04444", "05555"]}
+    result = lambda_handler(req, {})
+    data = result["body"]
+    # print debug
+    print(data)
+    # 検証
+    assert result["statusCode"] == 200
+
+
+def test_delete_matches_round(base_table_023, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
+    # 事前テーブル作成
+    test_post_matches_round(base_table_023, base_apigw_event_user1, verbose=False)
+    # test_post_matches_end(base_table_023, base_apigw_event_user1, verbose=False)
+
+    from src.delete_matches_round.app import lambda_handler
+    tablewatcher = TableWatcher(base_table_023, verbose=verbose)
+    # tablewatcher.print_all_elements()
+    req = copy.deepcopy(base_apigw_event_user1)
+    req["httpMethod"] = "DELETE"
+    req["body"] = json.dumps({
+        "match_id": "11111",
+    })
+    result = lambda_handler(req, {})
+    data = result["body"]
+    # print debug
+    print(data)
+    # 検証
+    assert result["statusCode"] == 200
+    tablewatcher.print_data_diff()
+
+
+def test_delete_match(base_table_023, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
+    # 事前テーブル作成
+    # test_post_matches_round(base_table_023, base_apigw_event_user1, verbose=False)
+    test_post_matches_end(base_table_023, base_apigw_event_user1, verbose=False)
+
+    from src.delete_match.app import lambda_handler
+    tablewatcher = TableWatcher(base_table_023, verbose=verbose)
+    # tablewatcher.print_all_elements()
+    req = copy.deepcopy(base_apigw_event_user1)
+    req["httpMethod"] = "DELETE"
+    req["body"] = json.dumps({
+        "match_id": "11111",
+    })
+    result = lambda_handler(req, {})
+    data = result["body"]
+    # print debug
+    print(data)
+    # 検証
+    assert result["statusCode"] == 200
+    tablewatcher.print_data_diff()
+
+
+def test_post_users_register_guest(base_table_023, base_apigw_event, base_apigw_event_user1, base_apigw_event_user2, verbose=True):
+    # 事前テーブル作成
+    # test_post_matches_round(base_table_023, base_apigw_event_user1, verbose=False)
+    test_post_matches_end(base_table_023, base_apigw_event_user1, verbose=False)
+
+    from src.post_users_register_guest.app import lambda_handler
+    tablewatcher = TableWatcher(base_table_023, verbose=verbose)
+    # tablewatcher.print_all_elements()
+    req = copy.deepcopy(base_apigw_event_user1)
+    req["body"] = json.dumps({
+        "guest_user_name": "test1",
+    })
+    result = lambda_handler(req, {})
+    data = json.loads(result["body"])
+    # print debug
+    print(data)
+    # 検証
+    assert result["statusCode"] == 200
+    tablewatcher.print_data_diff()
+    return data["guest_user_id"]

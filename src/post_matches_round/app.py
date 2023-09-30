@@ -91,6 +91,23 @@ def lambda_handler(event, context):
                 "message": "request body is invalid",
             }),
         }
+    # round_idの確認
+    try:
+        last_round_number = table.query(
+            IndexName="match_id",
+            KeyConditionExpression=Key('match_id').eq(match_id) & Key('base_table').eq('5'),
+            ScanIndexForward=False,
+            Limit=1
+        )["Items"][0]["round_number"]
+    except (IndexError, KeyError):
+        last_round_number = -1
+    if round_number != last_round_number+1:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "message": "round_number is invalid",
+            }),
+        }
     # match_infoの取得
     try:
         match_info = get_item(table, "01", match_id)
